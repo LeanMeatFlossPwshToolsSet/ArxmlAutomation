@@ -7,11 +7,11 @@ on:
   pull_request:
     branches: [ "main" ]
 jobs:
-  build:
-    name: Run Powershell publish
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      -name: Publish to Gallery
-      run: ./PSActions/PSGalleryPublish.ps1
-      shell: pwsh
+    build:
+      name: Run Script
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v1
+        - name: Script
+          run: ./PSActions/PSGalleryPublish.ps1
+          shell: pwsh
