@@ -10,5 +10,5 @@ jobs:
       steps:
         - uses: actions/checkout@v3
         - name: Script
-          run: ./PSActions/PSGalleryPublish.ps1
+          run: ./PSActions/PSGalleryPublish.ps1 -NugetKey ${{ secrets.PS_GALLARY }}
           shell: pwsh
