@@ -3,6 +3,7 @@ param(
     $NugetKey
 )
 $PSVersionTable
+dir env:
 Set-PSRepository PSGallery -InstallationPolicy Trusted
 if($env:GITHUB_REF_NAME -eq "main"){
     # main branch methods
