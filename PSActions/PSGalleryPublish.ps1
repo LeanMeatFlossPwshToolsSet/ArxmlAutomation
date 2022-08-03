@@ -14,8 +14,7 @@ if($LASTEXITCODE -ne 0){
 }
 $taggedVersionArray=$taggedVersion.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
 $taggedVersionArray[-1]=([int]$taggedVersionArray[-1]+1).ToString()
-$newTagVersion
-$env:SubmitVersion=$newTagVersion -join "."
+$env:SubmitVersion=$taggedVersionArray -join "."
 $GitNewTaggedVersion="v$($env:SubmitVersion)"
 
 # increasing the version
