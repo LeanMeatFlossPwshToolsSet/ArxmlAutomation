@@ -19,7 +19,8 @@ $env:PSModulePath
 [System.Environment]::AddE
 dir env:
 Set-PSRepository PSGallery -InstallationPolicy Trusted
-$taggedVersion=(git tag -l "v[0-9.]*")[-1]
+git tags
+$taggedVersion=git describe --match "v([0-9.]*)"
 if($LASTEXITCODE -ne 0){
     $taggedVersion="v0.0.1"
     Write-Host "Using $taggedVersion as the init version."
