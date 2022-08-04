@@ -60,8 +60,7 @@ if($env:GITHUB_REF_NAME -eq "main"){
     
 }
 else{
-    git tag -a "v0.0.1"  -m "Continous Delivery Version Submitted"
-    git push origin "v0.0.1"
+
 }
 
 
