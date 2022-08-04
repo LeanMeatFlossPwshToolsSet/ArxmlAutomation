@@ -14,8 +14,8 @@ if($LASTEXITCODE -ne 0){
 }
 $taggedVersionArray=$taggedVersion.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
 $taggedVersionArray[-1]=([int]$taggedVersionArray[-1]+1).ToString()
-$env:SubmitVersion=$taggedVersionArray -join "."
-$GitNewTaggedVersion="v$($env:SubmitVersion)"
+$submitVersion=$taggedVersionArray -join "."
+$GitNewTaggedVersion="v$($submitVersion)"
 
 # increasing the version
 $rev=git rev-parse HEAD
@@ -24,7 +24,9 @@ Current Commit $rev
 New Version need to be tagged $GitNewTaggedVersion
 "
 Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
+    Update-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1") -ModuleVersion $submitVersion
     Test-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1")
+    
     if($env:GITHUB_REF_NAME -eq "main"){
         # main branch methods
         Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -Verbose -Force
