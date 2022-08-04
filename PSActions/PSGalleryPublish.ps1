@@ -6,6 +6,12 @@ param(
 )
 $PSVersionTable
 $env:PSModulePath+=[IO.Path]::PathSeparator+"$($env:GITHUB_WORKSPACE)/ArxmlAutomation"
+
+git config user.name "${GITHUB_ACTOR}"
+git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+
+
 Write-Host "
 The Ps modules path are:
 $env:PSModulePath
@@ -37,14 +43,14 @@ Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEa
         # main branch methods
         Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -Verbose -Force
         git tag -a $GitNewTaggedVersion -m "Continous Delivery Version Submitted"
-        git push --tag
+        git push origin
         
     }
     else {
         # sub branch methods
         Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -WhatIf -Verbose
         git tag -a "PreReleasePassed"  -m "Continous Delivery Version Submitted"
-        git push --tag
+        git push origin "PreReleasePassed"
     }
 }
 
