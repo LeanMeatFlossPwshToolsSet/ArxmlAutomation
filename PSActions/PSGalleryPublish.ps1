@@ -7,8 +7,8 @@ param(
 $PSVersionTable
 $env:PSModulePath+=[IO.Path]::PathSeparator+"$($env:GITHUB_WORKSPACE)/ArxmlAutomation"
 
-git config user.name "${GITHUB_ACTOR}"
-git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+git config user.name "CD Process"
+git config user.email "CD.Process@users.noreply.github.com"
 
 
 
