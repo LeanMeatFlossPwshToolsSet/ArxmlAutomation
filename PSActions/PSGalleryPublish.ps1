@@ -5,6 +5,7 @@ param(
     $GitHubKey
 )
 $PSVersionTable
+$env:PSModulePath+=";$($env:GITHUB_WORKSPACE)/ArxmlAutomation"
 dir env:
 Set-PSRepository PSGallery -InstallationPolicy Trusted
 $taggedVersion=git describe --match "v([0-9]\.){3}"
@@ -23,6 +24,10 @@ Write-Host "
 Current Commit $rev
 New Version need to be tagged $GitNewTaggedVersion
 "
+Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
+    $psdDependenc
+    $env:PSModulePath="$env:PSModulePath;"
+}
 Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
     Update-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1") -ModuleVersion $submitVersion
     Test-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1")
