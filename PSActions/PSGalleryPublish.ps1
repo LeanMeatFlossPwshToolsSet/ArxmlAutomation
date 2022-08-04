@@ -5,8 +5,9 @@ param(
     $GitHubKey
 )
 $PSVersionTable
-$env:PSModulePath+=";$($env:GITHUB_WORKSPACE)/ArxmlAutomation"
+$env:PSModulePath+=[IO.Path]::PathSeparator+"$($env:GITHUB_WORKSPACE)/ArxmlAutomation"
 Write-Host $env:PSModulePath
+[System.Environment]::AddE
 dir env:
 Set-PSRepository PSGallery -InstallationPolicy Trusted
 $taggedVersion=git describe --match "v([0-9]\.){3}"
