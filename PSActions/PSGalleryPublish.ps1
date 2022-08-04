@@ -28,11 +28,13 @@ Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEa
     if($env:GITHUB_REF_NAME -eq "main"){
         # main branch methods
         Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -Verbose -Force
+        git tag -a $GitNewTaggedVersion -m "Continous Delivery Version Submitted"
+        git push --tag
         
     }
     else {
         # sub branch methods
-        Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -WhatIf -Verbose -Force
+        Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -WhatIf -Verbose
     }
 }
 
