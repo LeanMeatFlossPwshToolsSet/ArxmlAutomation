@@ -6,7 +6,10 @@ param(
 )
 $PSVersionTable
 $env:PSModulePath+=[IO.Path]::PathSeparator+"$($env:GITHUB_WORKSPACE)/ArxmlAutomation"
-Write-Host $env:PSModulePath
+Write-Host "
+The Ps modules path are:
+$env:PSModulePath
+"
 [System.Environment]::AddE
 dir env:
 Set-PSRepository PSGallery -InstallationPolicy Trusted
