@@ -10,7 +10,6 @@ function Get-ArxmlObj {
         $PowerShell.runspace = $Runspace
         $Runspace.Open()
         $script=@"
-    Add-Type -Path `"TesterOutput.dll`"
     [AR430.AutoSar]`$arxmlParsed=`$null
     [AR430.AutoSar]::GetInstance(`"{0}`",[ref]`$arxmlParsed)
     Write-Output @{{outp=`$arxmlParsed}}
