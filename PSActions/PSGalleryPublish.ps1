@@ -16,9 +16,10 @@ Write-Host "
 The Ps modules path are:
 $env:PSModulePath
 "
-[System.Environment]::AddE
 dir env:
 Set-PSRepository PSGallery -InstallationPolicy Trusted
+Write-Host "Current Tags:"
+git tag
 git tag -l "v[0-9.]*"
 # $taggedVersion=git describe --match "v([0-9.]*)"
 if($LASTEXITCODE -ne 0){
