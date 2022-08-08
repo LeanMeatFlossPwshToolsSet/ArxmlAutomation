@@ -55,7 +55,7 @@ Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEa
             if($taggedVersionArray[$i] -le $cloudVersion[$i]){
                 $taggedVersionArray[$i]=$cloudVersion[$i]
                 if($i -eq 2){
-                    $taggedVersionArray[$i]=$cloudVersion[$i]+1
+                    $taggedVersionArray[$i]=(([int]$cloudVersion[$i])+1).ToString()
                 }
             }
             $newSubmitVersion=$taggedVersionArray -join "."
