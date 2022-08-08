@@ -21,7 +21,7 @@ Set-PSRepository PSGallery -InstallationPolicy Trusted
 git fetch --all --tags
 Write-Host "Current Tags:"
 git tag
-$taggedVersions=git tag -l "v[0-9.]*" --sort="v:refname"
+$taggedVersions=@()+(git tag -l "v[0-9.]*" --sort="v:refname")
 $taggedVersions|Write-Host
 
 $taggedVersion=$taggedVersions[-1]
