@@ -21,8 +21,10 @@ Set-PSRepository PSGallery -InstallationPolicy Trusted
 git fetch --all --tags
 Write-Host "Current Tags:"
 git tag
-git tag -l "v[0-9.]*"
-# $taggedVersion=git describe --match "v([0-9.]*)"
+$taggedVersions=git tag -l "v[0-9.]*" --sort="v:refname"
+$taggedVersions|Write-Host
+
+$taggedVersion=$taggedVersions[-1]
 if($LASTEXITCODE -ne 0){
     $taggedVersion="v0.0.1"
     Write-Host "Using $taggedVersion as the init version."
