@@ -31,6 +31,10 @@ if($LASTEXITCODE -ne 0){
 }
 $taggedVersionArray=$taggedVersion.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
 $taggedVersionArray[-1]=([int]$taggedVersionArray[-1]+1).ToString()
+
+
+
+
 $submitVersion=$taggedVersionArray -join "."
 $GitNewTaggedVersion="v$($submitVersion)"
 
@@ -41,14 +45,36 @@ Current Commit $rev
 New Version need to be tagged $GitNewTaggedVersion
 "
 Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
+    
+    $moduleOnCloud=Find-Module -Name $_.Name
+    # $moduleOnCloud|Write-Host
+    if($moduleOnCloud){
+        $cloudVersion=$moduleOnCloud.Version.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
+        for ($i = 0; $i -lt $cloudVersion.Count; $i++) {
+            <# Action that will repeat until the condition is met #>
+            if($taggedVersionArray[$i] -le $cloudVersion[$i]){
+                $taggedVersionArray[$i]=$cloudVersion[$i]
+                if($i -eq 2){
+                    $taggedVersionArray[$i]=(([int]$cloudVersion[$i])+1).ToString()
+                }
+            }
+            $newSubmitVersion=$taggedVersionArray -join "."
+            if(-not $newSubmitVersion.Equals($submitVersion)){
+                $submitVersion=$taggedVersionArray -join "."
+                $GitNewTaggedVersion="v$($submitVersion)"
+                Write-Host "
+                Version update
+                New Version need to be tagged $GitNewTaggedVersion
+                "
+            }
+            
+        }
+    }
     Update-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1") -ModuleVersion $submitVersion
     Test-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1")
-    
     if($env:GITHUB_REF_NAME -eq "main"){
         # main branch methods
         Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -Verbose -Force
-        git tag -a $GitNewTaggedVersion -m "Continous Delivery Version Submitted"
-        git push origin
         
     }
     else {
