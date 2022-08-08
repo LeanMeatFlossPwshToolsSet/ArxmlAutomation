@@ -39,7 +39,7 @@ $submitVersion=$taggedVersionArray -join "."
 $GitNewTaggedVersion="v$($submitVersion)"
 
 # increasing the version
-$rev=git rev-parse HEAD
+$rev=$env:GITHUB_SHA
 Write-Host "
 Current Commit $rev
 New Version need to be tagged $GitNewTaggedVersion
@@ -86,8 +86,8 @@ Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEa
 if($env:GITHUB_REF_NAME -eq "main"){
     # main branch methods
     "Push tag to Repo"|Write-Host
-    git tag -a $GitNewTaggedVersion -m "Continous Delivery Version Submitted"
-    git push origin
+    git tag -a $GitNewTaggedVersion $rev -m "Continous Delivery Version Submitted"
+    git push origin "$GitNewTaggedVersion"
     
 }
 else{
