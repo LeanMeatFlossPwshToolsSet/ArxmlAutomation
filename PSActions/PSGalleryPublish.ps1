@@ -85,12 +85,13 @@ Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEa
 }
 if($env:GITHUB_REF_NAME -eq "main"){
     # main branch methods
+    "Push tag to Repo"|Write-Host
     git tag -a $GitNewTaggedVersion -m "Continous Delivery Version Submitted"
     git push origin
     
 }
 else{
-
+    "In branch don't push the tag"|Write-Host
 }
 
 
