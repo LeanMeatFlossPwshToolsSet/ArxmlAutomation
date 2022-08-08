@@ -47,6 +47,7 @@ New Version need to be tagged $GitNewTaggedVersion
 Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
     
     $moduleOnCloud=Find-Module -Name $_.Name
+    $moduleOnCloud|Write-Host
     if($moduleOnCloud){
         $cloudVersion=$moduleOnCloud.Version.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
         for ($i = 0; $i -lt $cloudVersion.Count; $i++) {
