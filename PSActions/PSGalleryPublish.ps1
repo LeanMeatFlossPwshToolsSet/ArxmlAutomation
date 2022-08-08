@@ -45,8 +45,7 @@ Current Commit $rev
 New Version need to be tagged $GitNewTaggedVersion
 "
 Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
-    Update-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1") -ModuleVersion $submitVersion
-    Test-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1")
+    
     $moduleOnCloud=Find-Module -Name $_.Name
     if($moduleOnCloud){
         $cloudVersion=$moduleOnCloud.Version.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
@@ -70,6 +69,8 @@ Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEa
             
         }
     }
+    Update-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1") -ModuleVersion $submitVersion
+    Test-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1")
     if($env:GITHUB_REF_NAME -eq "main"){
         # main branch methods
         Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -Verbose -Force
