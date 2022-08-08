@@ -18,6 +18,7 @@ $env:PSModulePath
 "
 dir env:
 Set-PSRepository PSGallery -InstallationPolicy Trusted
+git fetch --all --tags
 Write-Host "Current Tags:"
 git tag
 git tag -l "v[0-9.]*"
