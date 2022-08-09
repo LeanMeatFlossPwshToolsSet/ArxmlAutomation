@@ -1,7 +1,3 @@
 # Create a composition sw component type
-if (-not (Get-InstalledModule -Name ArxmlAutomation-Swc)){
-    Install-Module ArxmlAutomation-Swc -Scope CurrentUser
-}
+&"$PSScriptRoot\Examples.EnvironmentSetup.ps1"
 Import-Module ArxmlAutomation-Swc
-
-$CompositionSWCompontn
