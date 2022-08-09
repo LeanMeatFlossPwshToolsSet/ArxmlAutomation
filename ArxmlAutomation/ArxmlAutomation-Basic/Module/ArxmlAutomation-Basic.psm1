@@ -218,6 +218,7 @@ function Add-Action{
 function Get-AUTOSARCollection{
     [OutputType([AR430.AutoSar])]
     param(
+        [Parameter(ValueFromPipeline)]
         [System.IO.FileInfo[]]
         $FilePaths
     )
