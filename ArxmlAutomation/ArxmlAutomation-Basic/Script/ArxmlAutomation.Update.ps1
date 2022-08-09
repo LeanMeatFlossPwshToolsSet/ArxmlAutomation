@@ -1,3 +1,4 @@
-Get-InstalledModule -Name "ArxmlAutomation-*"|ForEach-Object{
+
+Get-InstalledModule -Name "ArxmlAutomation-*" -ErrorAction Ignore|ForEach-Object{
     Update-Module -Name $_.Name -Verbose
 }
