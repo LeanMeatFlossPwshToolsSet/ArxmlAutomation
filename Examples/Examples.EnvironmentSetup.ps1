@@ -5,4 +5,5 @@ Write-Host "
 The Ps modules path are:
 $env:PSModulePath
 "
+$ErrorActionPreference="Break"
 

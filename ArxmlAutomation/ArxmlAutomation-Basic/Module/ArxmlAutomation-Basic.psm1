@@ -52,6 +52,24 @@ function New-AutosarItem{
         return $NewItem
     }
 }
+function New-ReferenceProperty{
+    param(
+        [Parameter(ValueFromPipeline)]
+        [AR430._AR430BaseType]        
+        $Item,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        $PropertyName,
+        [AR430._AR430BaseType] 
+        $ReferenceItem
+    )
+    process{
+        $Item |New-PropertyFactory -PropertyName $PropertyName -Process{
+            # set dest
+            $_.Dest=$ReferenceItem.GetType().Name -as $_.Dest.GetType()
+            $_|Set-StringToProperty -Value $ReferenceItem.GetAutosarPath()
+        }
+    }
+}
 function Get-PropertyFactory{
     param(
         [Parameter(ValueFromPipeline)]
@@ -258,20 +276,87 @@ function Use-ArxmlFile{
     }
 }
 function Find-AllItemsByType{
+    [CmdletBinding()]
     param(
-        [Parameter(ValueFromPipeline)]
+        [Parameter(ValueFromPipeline,ParameterSetName="AUTOSARCollection")]
         [AR430.AUTOSARCollection]
         $AUTOSARCollection,
+        [Parameter(ValueFromPipeline,ParameterSetName="AUTOSAROBJ")]
+        [AR430._AR430BaseType]
+        $AUTOSARObj,
         [System.Type[]]
         $Type
     )
     process{
         $Type|Foreach-Object{
             $content=[System.Array]::CreateInstance($_,0)
-            $AUTOSARCollection.GetElementArrayByType([ref]$content)
+            if($PSCmdlet.ParameterSetName -eq "AUTOSARCollection"){
+                $AUTOSARCollection.GetElementArrayByType([ref]$content)
+            }
+            else{
+                $AUTOSARObj.GetElementArrayByType([ref]$content)
+            }
             $content
         }
         
+    }
+}
+function Get-ArElementRef{
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline)]
+        [AR430._AR430BaseType]
+        $ArObjWithRef
+    )
+    process{
+        # get potential ref objects
+        if($ArObjWithRef -is [AR430.Ref]){
+            return $ArObjWithRef
+        }
+        else{
+            $ArObjWithRef.GetType().GetProperties()|Where-Object{
+                $_.PropertyType.BaseType -eq [AR430.Ref]
+            }|ForEach-Object{
+                $_.GetValue($ArObjWithRef)                
+            }
+        }
+        
+    }
+}
+function Find-ArElementFromRef{
+    [CmdletBinding()]
+    param(
+        [Parameter(ParameterSetName="AUTOSARCollection")]
+        [AR430.AUTOSARCollection]
+        $AUTOSARCollection,
+        [Parameter(ParameterSetName="AUTOSAROBJ")]
+        [AR430._AR430BaseType]
+        $AUTOSARObj,
+        [Parameter(ValueFromPipeline)]
+        [AR430._AR430BaseType]
+        $ArObjWithRef
+    )
+    process{
+        Get-ArElementRef -ArObjWithRef $ArObjWithRef|Foreach-Object{
+            $elementType="AR430.$($_.Dest.ToString())" -as [Type]
+            Write-Verbose "Get Element Type Destination: $elementType"
+            $content=[System.Array]::CreateInstance($elementType,0)
+            if($PSCmdlet.ParameterSetName -eq "AUTOSARCollection"){
+                $AUTOSARCollection.GetElementsByPath($_.ToString(),[ref]$content)
+            }
+            else{
+                $AUTOSARObj.GetElementsByPath($_.ToString(),[ref]$content)
+            }
+            if($content.Count -gt 1){
+                Write-Error "Get more than 1 item referenced to $($_)"
+            }
+            elseif($content.Count -eq 0){
+                Write-Error "Cannot find $($_)"
+            }
+            else{
+                $content[0]
+            }            
+        }        
     }
 }
 function Get-AllEvents{
