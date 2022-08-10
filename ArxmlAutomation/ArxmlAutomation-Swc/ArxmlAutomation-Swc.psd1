@@ -51,7 +51,7 @@ Description = 'Advance usage to operate arxml file based on ArxmlAutomtaion Basi
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @('ArxmlAutomation-Basic')
+RequiredModules = @('ArxmlAutomation-Basic','ArxmlAutomation-Swc-Validation')
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()

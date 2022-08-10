@@ -6,4 +6,4 @@ The Ps modules path are:
 $env:PSModulePath
 "
 $ErrorActionPreference="Break"
-
+&"../Rules/ArxmlAutomation.Rules.ps1"

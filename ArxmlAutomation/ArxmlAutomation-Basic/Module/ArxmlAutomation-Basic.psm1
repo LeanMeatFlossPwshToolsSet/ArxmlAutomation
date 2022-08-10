@@ -370,3 +370,44 @@ function Get-AllEvents{
         $AUTOSARCollection|Find-AllItemsByType -Type ([AR430.TimingEvent]),([AR430.BswTimingEvent])
     }
 }
+
+function Select-ArProperty{
+    param(
+        [Parameter(ValueFromPipeline)]
+        [AR430._AR430BaseType]
+        $ArObj,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        $PropertyName,
+        [string[]]
+        $SelectPropertyName
+    )
+    process{
+        if($PropertyName){
+            $finalObj=$ArObj.$PropertyName
+            if(-not $finalObj){
+                Write-Warning "Null property <$PropertyName> for $ArObj <$($ArObj.GetType())> at $($ArObj.GetAutosarPath())"
+                return
+            }            
+        }
+        else{
+            $finalObj=$ArObj
+        }
+        if(-not $finalObj){
+            Write-Error "Try to select $SelectPropertyName from Null object"
+        }
+        else{
+            $finalObj.GetType().GetProperties()|Where-Object{
+                $_.Name|Select-String -Pattern $SelectPropertyName
+            }|ForEach-Object{
+                $valueReturn=$_.GetValue($finalObj)
+                if(-not $valueReturn){
+                    Write-Host "Null property $($_.Name) for $ArObj <$($ArObj.GetType())> at $($ArObj.GetAutosarPath())" -ForegroundColor Yellow
+                }
+                else{
+                    return $valueReturn
+                }
+            }
+        }
+        
+    }
+}
