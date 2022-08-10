@@ -13,7 +13,7 @@ function Get-UnConnectedPort {
     process{
         # list connectors
         $allConnectors=$Composition|Select-ArProperty -PropertyName Connectors -SelectPropertyName "[a-zA-Z]*SwConnectors"
-        Write-Host "Current Connector Infomrations:" -BackgroundColor Green
+        Write-Host "Current Connector Infomrations:" -ForegroundColor Green
         if($allConnectors -and $allConnectors.Count -gt 0){
             $allConnectors|ForEach-Object{
                 [PSCustomObject]@{                    
@@ -25,7 +25,7 @@ function Get-UnConnectedPort {
         else{
             Write-Host "No connection avaliable at current version `n" -ForegroundColor Yellow
         }
-        Write-Host "Current Unconnect ports Infomrations:" -BackgroundColor Green
+        Write-Host "Current Unconnect ports Infomrations:" -ForegroundColor Green
         $Composition.Components|ForEach-Object{
             $instance=$_
             $type=$_|Find-ArElementFromRef -AUTOSARCollection $AutoSarCollection
@@ -44,6 +44,6 @@ function Get-UnConnectedPort {
                 }                
             }
         }|Tee-Object -Variable result|Format-Table|Out-String|Write-Host
-
+        return $result
     }    
 }
