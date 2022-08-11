@@ -7,9 +7,7 @@ function Get-UnConnectedPort {
     [OutputType([PortInstanceInfo[]])]
     param (
         [AR430.CompositionSwComponentType]
-        $Composition,
-        [AR430.AUTOSARCollection]
-        $AutoSarCollection
+        $Composition
     )
     process{
         # list connectors
@@ -29,12 +27,12 @@ function Get-UnConnectedPort {
         Write-Host "Current Unconnect ports Infomrations:" -ForegroundColor Green
         $Composition.Components|ForEach-Object{
             $instance=$_
-            $type=$_|Find-ArElementFromRef -AUTOSARCollection $AutoSarCollection
+            $type=$_|Find-ArElementFromRef
             $connectedPortInComposition=@()
             $connectedPortInComposition+=$allConnectors|Select-ArProperty -SelectPropertyName "(Requester|Provider)Iref"|Where-Object{
                 ($_|Select-ArProperty -SelectPropertyName ContextComponentRef) -eq $instance
             }|ForEach-Object{
-                $_|Select-ArProperty -SelectPropertyName "Target(R|Pr|P)PortRef"|Find-ArElementFromRef -AUTOSARCollection $AutoSarCollection
+                $_|Select-ArProperty -SelectPropertyName "Target(R|Pr|P)PortRef"|Find-ArElementFromRef
             }|Select-Object -Unique
             $type|Select-ArProperty -PropertyName Ports -SelectPropertyName "(P|Pr|R)PortPrototypes"|Where-Object{
                 -not $connectedPortInComposition.Contains($_)
@@ -46,5 +44,15 @@ function Get-UnConnectedPort {
             }
         }|Tee-Object -Variable result|Format-Table|Out-String|Write-Host
         return $result
+    }
+}
+function Connect-PortAutomation{
+    param (
+        [Parameter(ValueFromPipeline)]
+        [PortInstanceInfo]
+        $SourcePortInstanceInfo
+    )
+    process{
+        & $Global:ArxmlAutomationConfig."Find-PortMatched" -SourceSWComponent $SourcePortInstanceInfo.Component -SourcePort $SourcePortInstanceInfo.Port
     }
 }

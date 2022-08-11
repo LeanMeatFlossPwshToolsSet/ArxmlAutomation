@@ -8,8 +8,8 @@
             "name": "PowerShell: Launch Current File",
             "type": "PowerShell",
             "request": "launch",
-            "script": "${file}",
-            "cwd": "${file}",
+            "script": "$env:LocalDebugMode=1;${file}",
+            "cwd": "${file}",            
             "createTemporaryIntegratedConsole": true
         }
     ]

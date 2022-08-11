@@ -36,7 +36,9 @@ function Assert-ArObjType{
         [AR430._AR430BaseType]
         $InputObject,
         [string[]]
-        $AssertType
+        $AssertType,
+        [switch]
+        $Ignore
     )
     process{
         if($InputObject.GetType().Name|Select-String -CaseSensitive -Pattern ($AssertType|ForEach-Object{
@@ -44,7 +46,7 @@ function Assert-ArObjType{
         })){
             return $InputObject
         }
-        else{
+        elseif(-not $Ignore){
             throw "$InputObject is not  part of AssertType $AssertType"
         }
     }

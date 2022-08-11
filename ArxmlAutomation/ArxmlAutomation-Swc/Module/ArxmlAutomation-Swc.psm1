@@ -13,11 +13,10 @@ function Set-AssemblySWConnector {
             $_|Assert-ArObjType ([AR430.RPortPrototype],[AR430.PRPortPrototype])
         })]
         [AR430._AR430BaseType]
-        $RequestPort,
-        [AR430.AUTOSARCollection]
-        $AutoSarCollection
+        $RequestPort
     )
     process{
+        $AutoSarCollection=Get-CurrentAutoSarCollection
         # create reference
         Confirm-SameArObjContainer -Items $ProvideComponent,$RequestComponent -Depth 1
         # confirm interface types
@@ -31,7 +30,7 @@ function Set-AssemblySWConnector {
             $_|New-ReferenceProperty -ReferenceItem $RequestComponent -PropertyName ContextComponentRef
             $_|New-ReferenceProperty -ReferenceItem $ProvideComponent -PropertyName TargetRPortRef
         }
-        Invoke-Expression -Command $Global:ArxmlAutomationConfig["Set-AssemblySWConnectorShortName"] -AssemblySwConnector $AssemblyConnector -AutoSarCollection $AutoSarCollection
+        Invoke-Expression -Command $Global:ArxmlAutomationConfig["Set-AssemblySWConnectorShortName"] -AssemblySwConnector $AssemblyConnector
         $ProvideComponent._AutosarParent|Assert-ArObjType -AssertType ([AR430.CompositionSwComponentType])|ForEach-Object{
             $_.Connectors.AssemblySwConnectors
         }
@@ -41,9 +40,7 @@ function Set-AssemblySWConnector {
 function Confirm-AssemblySWConnector{
     param(
         [AR430.AssemblySwConnector]
-        $AssemblySwConnector,
-        [AR430.AUTOSARCollection]
-        $AutoSarCollection
+        $AssemblySwConnector
     )
     process{
 
@@ -52,9 +49,7 @@ function Confirm-AssemblySWConnector{
 function Confirm-AssemblySWConnectorRulesInterfaceShallMatch{
     param(
         [AR430.AssemblySwConnector]
-        $AssemblySwConnector,
-        [AR430.AUTOSARCollection]
-        $AutoSarCollection
+        $AssemblySwConnector
     )
     process{
 
