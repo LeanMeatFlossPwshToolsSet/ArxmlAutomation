@@ -7,7 +7,7 @@ Write-Host "
 The Ps modules path are:
 $env:PSModulePath
 "
-Get-ChildItem $ModulesPath -Directory|ForEach-Object{
-    Import-Module "$($_.Name)" -Force
-}
+# Get-ChildItem $ModulesPath -Directory|ForEach-Object{
+#     Import-Module "$($_.Name)" -Force -Verbose
+# }
 Set-Location $EnterLocation

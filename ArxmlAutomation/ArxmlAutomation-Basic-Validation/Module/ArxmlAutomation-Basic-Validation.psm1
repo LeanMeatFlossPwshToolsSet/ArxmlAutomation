@@ -35,25 +35,17 @@ function Assert-ArObjType{
         [Parameter(ValueFromPipeline)]
         [AR430._AR430BaseType]
         $InputObject,
-        [type[]]
+        [string[]]
         $AssertType
     )
     process{
-        $AssertType|Foreach-Object{
-            if(-not $_.Namespace.Contains("AR430")){
-                Write-Error "AssertType $_ is not part of AR430"
-            }
+        if($InputObject.GetType().Name|Select-String -CaseSensitive -Pattern ($AssertType|ForEach-Object{
+            "(?m)^$_$"
+        })){
+            return $InputObject
         }
-        $assertTypedItem=$AssertType|Foreach-Object {
-            if($InputObject -is $_){
-                return $InputObject -as $_
-            }
-        }|Select-Object -First 1 
-        if($assertTypedItem){
-            return $assertTypedItem
-        } 
         else{
-            Write-Error "$InputObject is not  part of AssertType $AssertType"
+            throw "$InputObject is not  part of AssertType $AssertType"
         }
     }
 }

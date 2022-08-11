@@ -1,9 +1,10 @@
-class UnConnectedPortInComposition{
+class PortInstanceInfo{
     [AR430.SwComponentPrototype]$Component
     [AR430._AR430BaseType]$Port
 }
 function Get-UnConnectedPort {
-    [OutputType([UnConnectedPortInComposition[]])]
+    [CmdletBinding()]
+    [OutputType([PortInstanceInfo[]])]
     param (
         [AR430.CompositionSwComponentType]
         $Composition,
@@ -38,12 +39,12 @@ function Get-UnConnectedPort {
             $type|Select-ArProperty -PropertyName Ports -SelectPropertyName "(P|Pr|R)PortPrototypes"|Where-Object{
                 -not $connectedPortInComposition.Contains($_)
             }|ForEach-Object{
-                [UnConnectedPortInComposition]@{
+                [PortInstanceInfo]@{
                     Port=$_
                     Component=$instance
                 }                
             }
         }|Tee-Object -Variable result|Format-Table|Out-String|Write-Host
         return $result
-    }    
+    }
 }

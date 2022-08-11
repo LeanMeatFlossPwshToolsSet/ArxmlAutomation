@@ -27,3 +27,23 @@ function Confirm-AssemblySWConnector{
         return true
     }
 }
+function Find-PortMatched{
+    [CmdletBinding()]
+    [OutputType([PortInstanceInfo])]
+    param (
+        [AR430.AUTOSARCollection]
+        $AutoSarCollection,
+        [AR430.SwComponentPrototype]
+        $SourceSWComponent,
+        [AR430._AR430BaseType]
+        $SourcePort
+    )
+    process{
+        if($SourcePortInstanceInfo.Port -is [AR430.PPortPrototype]){
+            
+        }
+        
+        # find all interface that match $SourcePort interface 
+        $SourcePort|Find-ArElementFromRef|Assert-ArObjType []
+    }
+}

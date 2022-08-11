@@ -51,7 +51,7 @@ Description = 'Advance usage to operate arxml file based on ArxmlAutomtaion Basi
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @('ArxmlAutomation-Basic','ArxmlAutomation-Swc-Validation')
+RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -66,7 +66,7 @@ RequiredModules = @('ArxmlAutomation-Basic','ArxmlAutomation-Swc-Validation')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-# NestedModules = @()
+NestedModules = @('ArxmlAutomation-Basic','ArxmlAutomation-Swc-Validation')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @("*")

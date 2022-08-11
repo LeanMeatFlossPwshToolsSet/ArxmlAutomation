@@ -9,6 +9,8 @@ New-Item -Path "./ArxmlAutomation/ArxmlAutomation-$ModuleName" -ItemType Directo
 New-Item -Path "./ArxmlAutomation/ArxmlAutomation-$ModuleName/ArxmlAutomation-$ModuleName.Tests.ps1" -ItemType File -Force
 New-Item -Path "./ArxmlAutomation/ArxmlAutomation-$ModuleName/Module" -ItemType Directory -Force
 New-Item -Path "./ArxmlAutomation/ArxmlAutomation-$ModuleName/Module/ArxmlAutomation-$ModuleName.psm1" -ItemType File -Force
+# New-Item -Path "./ArxmlAutomation/ArxmlAutomation-$ModuleName/Script" -ItemType Directory -Force
+# New-Item -Path "./ArxmlAutomation/ArxmlAutomation-$ModuleName/Script/ArxmlAutomation-$ModuleName.Classes.ps1" -ItemType File -Force
 New-ModuleManifest -Path "./ArxmlAutomation/ArxmlAutomation-$ModuleName/ArxmlAutomation-$ModuleName.psd1" -Author "LeanMeatFloss" -CompanyName "Song" -Copyright @"
 MIT License
 
@@ -31,5 +33,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-"@ -FunctionsToExport ("*") -CmdletsToExport ("*") -LicenseUri 'https://raw.githubusercontent.com/LeanMeatFloss/ArxmlAutomation/main/LICENSE' -RootModule "Module/ArxmlAutomation-$ModuleName.psm1"
+"@ -FunctionsToExport ("*") -CmdletsToExport ("*") -LicenseUri 'https://raw.githubusercontent.com/LeanMeatFloss/ArxmlAutomation/main/LICENSE' -RootModule "Module/ArxmlAutomation-$ModuleName.psm1" -ScriptsToProcess ("Script/ArxmlAutomation-$ModuleName.Classes.ps1") -NestedModules 'ArxmlAutomation-Basic'
 Set-Location $initLocation
