@@ -8,5 +8,5 @@ Get-AUTOSARCollection -FilePaths (Get-ChildItem "../ExampleResouces/SWComponentA
 $compositionDest=Find-AllItemsByType -Type ([AR430.CompositionSwComponentType])|Where-Object {
     $_.GetAutosarPath().Equals("/ComponentTypes/Implementation")
 }
-Get-UnConnectedPort  -Composition $compositionDest|Connect-PortAutomation
+Get-UnConnectedRPort  -Composition $compositionDest|Connect-PortAutomation
 

@@ -32,8 +32,8 @@ function Find-PortMatched{
         1. R port(or R in PR port) need to be connected to the P port with the same interface.
         If match not find, will return nothing.
         If match find, we will return a object containing two properties:
-        TargetComponent
-        TargetPort
+        Component
+        Port
 
     .NOTES
         Information or caveats about the function e.g. 'This function is not supported in Linux'
@@ -52,21 +52,26 @@ function Find-PortMatched{
         $SourcePort
     )
     process{
-        if($SourcePort|Assert-ArObjType -AssertType "(R|Pr)PortPrototype" -Ignore){
-            $SourceSWComponent._AutosarParent|Assert-ArObjType -AssertType CompositionSwComponentType|Select-ArProperty -SelectPropertyName Components|ForEach-Object{
+        if($SourcePort|Assert-ArObjType -AssertTypeMatch "(R|Pr)PortPrototype" -AllowIgnore){
+            $selectObject=$SourceSWComponent._AutosarParent|Assert-ArObjType -AssertTypeMatch CompositionSwComponentType|Select-ArProperty -SelectPropertyName Components|ForEach-Object{
                 $componentInstance=$_
                 $componentType=$_|Find-ArElementFromRef 
                 $componentType|Select-ArProperty -PropertyName Ports -SelectPropertyName "(Pr|P)PortPrototypes"|Where-Object{
                     # get interface
                     ($_|Find-ArElementFromRef ) -eq ($SourcePort|Find-ArElementFromRef)
                 }|ForEach-Object{
-                    Write-Host "The port $_ of $componentInstance match the port $SourcePort of $SourceSWComponent"
-                    return [PSCustomObject]@{
-                        TargetComponent=$componentInstance
-                        TargetPort = $_
+                    Write-FunctionInfos "$componentInstance.$_ match $SourceSWComponent.$SourcePort" -ForegroundColor Yellow
+                    return @{
+                        Component=$componentInstance
+                        Port = $_
                     }
-                }|Select-Object -First 1
+                }
             }
+            $selectObject|Select-Object -First 1|Write-FunctionInfos  -Content {"Select $($_.Component).$($_.Port)"} -ForegroundColor Green
+            return $selectObject|Select-Object -First 1
+        }
+        else{
+            "Ignore $SourceSWComponent.$SourcePort matching since it is $($SourcePort.GetType())"|Write-FunctionInfos -ForegroundColor Yellow
         }
         
         # find all interface that match $SourcePort interface 

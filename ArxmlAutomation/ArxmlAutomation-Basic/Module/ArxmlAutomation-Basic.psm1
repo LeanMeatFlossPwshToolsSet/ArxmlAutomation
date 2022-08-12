@@ -246,26 +246,25 @@ function Get-AUTOSARCollection{
         [AR430.AUTOSARCollection]::LoadFile($fileList)
     }
 }
-[AR430.AUTOSARCollection]$Script:_CurrentAutoSarCollection=$null
+[AR430.AUTOSARCollection]$Global:_CurrentAutoSarCollection=$null
 function Use-AutoSarCollection{
     param(
         [Parameter(ValueFromPipeline)]
         [AR430.AUTOSARCollection]
         $AUTOSARCollection
     )
-    process{
-        $Script:_CurrentAutoSarCollection=$AUTOSARCollection
-        Write-Host "Current Processing AutoSarCollection"
-        $AUTOSARCollection|Format-Table|Out-String|Write-Host
+    process{        
+        $Global:_CurrentAutoSarCollection=$AUTOSARCollection
+        $AUTOSARCollection|Format-Table|Out-String|Write-FunctionInfos -Heading "Current Processing AutoSarCollection" -ForegroundColor Green
     }
 }
 function Get-CurrentAutoSarCollection{
     process{
-        if(-not $Script:_CurrentAutoSarCollection){
+        if(-not $Global:_CurrentAutoSarCollection){
             throw "Current AutosarCollection Not Specified"
         }
         else{
-            return $Script:_CurrentAutoSarCollection
+            return $Global:_CurrentAutoSarCollection
         }
         
     }
@@ -398,7 +397,7 @@ function Select-ArProperty{
             }|ForEach-Object{
                 $valueReturn=$_.GetValue($finalObj)
                 if(-not $valueReturn){
-                    Write-Host "Null property $($_.Name) for $ArObj <$($ArObj.GetType())> at $($ArObj.GetAutosarPath())" -ForegroundColor Yellow
+                    Write-FunctionInfos "Null property $($_.Name) for $ArObj <$($ArObj.GetType())> at $($ArObj.GetAutosarPath())" -ForegroundColor Yellow
                 }
                 else{
                     return $valueReturn

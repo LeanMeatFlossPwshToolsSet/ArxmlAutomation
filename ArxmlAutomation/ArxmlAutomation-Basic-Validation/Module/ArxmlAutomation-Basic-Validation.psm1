@@ -35,19 +35,50 @@ function Assert-ArObjType{
         [Parameter(ValueFromPipeline)]
         [AR430._AR430BaseType]
         $InputObject,
+        [Parameter(ParameterSetName="MatchString" , Position=0)]
         [string[]]
+        $AssertTypeMatch,
+        [Parameter(ParameterSetName="MatchType", Position=0)]
+        [type[]]
         $AssertType,
         [switch]
-        $Ignore
+        $AllowIgnore,
+        [switch]
+        $ReturnBool
     )
     process{
-        if($InputObject.GetType().Name|Select-String -CaseSensitive -Pattern ($AssertType|ForEach-Object{
-            "(?m)^$_$"
-        })){
-            return $InputObject
+        if($PSCmdlet.ParameterSetName -eq ("MatchString")){
+            if($InputObject.GetType().Name|Select-String -CaseSensitive -Pattern ($AssertTypeMatch|ForEach-Object{
+                "(?m)^$_$"
+            })){
+                if($ReturnBool){
+                    return $true
+                }
+                else{
+                    return $InputObject
+                }
+                
+            }
+            elseif(-not $AllowIgnore){
+                throw "$InputObject is not  part of AssertType $AssertType"
+            }
+            elseif($ReturnBool){
+                return $false
+            }
         }
-        elseif(-not $Ignore){
-            throw "$InputObject is not  part of AssertType $AssertType"
+        else{
+            if($AssertType|Where-Object{$InputObject -is $_}){
+                if($ReturnBool){
+                    return $true
+                }
+                else{
+                    return $InputObject
+                }
+            }
+            elseif($ReturnBool){
+                return $false
+            }
         }
+        
     }
 }
