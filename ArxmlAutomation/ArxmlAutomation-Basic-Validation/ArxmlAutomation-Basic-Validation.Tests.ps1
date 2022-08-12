@@ -1,7 +1,12 @@
+
 BeforeAll{
-    $env:PSModulePath+=[IO.Path]::PathSeparator+(Resolve-Path "..")
-    Import-Module ArxmlAutomation-Basic-Validation -Force
+    $env:PSModulePath+=[IO.Path]::PathSeparator+(Resolve-Path "$PSScriptRoot/..")
+    $moduleName=(([System.IO.DirectoryInfo] (Resolve-Path "$PSScriptRoot").Path).Name)
+    Write-Host "Test Module Name $moduleName"
+    Import-Module $moduleName
+    Import-Module ArxmlAutomation-Basic -Force
 }
+
 Describe "Assert-ArObjType"{
     It "AssertType correct "{
         {

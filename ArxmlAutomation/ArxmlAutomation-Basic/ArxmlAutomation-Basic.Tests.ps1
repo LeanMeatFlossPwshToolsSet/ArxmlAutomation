@@ -2,8 +2,8 @@ BeforeAll{
     $env:PSModulePath+=[IO.Path]::PathSeparator+(Resolve-Path "$PSScriptRoot/..")
     $moduleName=(([System.IO.DirectoryInfo] (Resolve-Path "$PSScriptRoot").Path).Name)
     Write-Host "Test Module Name $moduleName"
-    Import-Module $moduleName  -Force
-    ../../Rules/ArxmlAutomation.Rules.ps1
+    Import-Module $moduleName
+    & Resolve-Path ("$PSScriptRoot/../../Rules/ArxmlAutomation.Rules.ps1")
     Get-AUTOSARCollection -FilePaths (Get-ChildItem "$PSScriptRoot/../../ExampleResouces/SWComponentAndComposition" -Filter "*.arxml" -Recurse)|Use-AutoSarCollection
 }
 Describe "Test for Create New Arxml Object" {
