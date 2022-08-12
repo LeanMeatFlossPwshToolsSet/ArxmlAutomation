@@ -3,7 +3,8 @@ BeforeAll{
     $moduleName=(([System.IO.DirectoryInfo] (Resolve-Path "$PSScriptRoot").Path).Name)
     Write-Host "Test Module Name $moduleName"
     Import-Module $moduleName  -Force
-    Import-Module (Resolve-Path "$PSScriptRoot/../../Util/TestUtil.psm1") -Force    
+    Import-Module (Resolve-Path "$PSScriptRoot/../../Util/TestUtil.psm1") -Force 
+    Get-AUTOSARCollection -FilePaths (Get-ChildItem "$PSScriptRoot/../../ExampleResouces/SWComponentAndComposition" -Filter "*.arxml" -Recurse)|Use-AutoSarCollection   
 }
 Describe "New-AssemblySWConnector" {
     Context "Default Context" {
