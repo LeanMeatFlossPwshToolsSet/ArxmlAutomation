@@ -1,0 +1,4 @@
+{
+    "powershell.pester.codeLens": false,
+    "pester.autoRunOnSave": false
+}
