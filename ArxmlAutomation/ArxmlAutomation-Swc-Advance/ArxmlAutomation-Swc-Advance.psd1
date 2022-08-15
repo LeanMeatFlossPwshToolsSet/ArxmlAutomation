@@ -50,7 +50,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Advance usage of Swc module'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
