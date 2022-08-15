@@ -7,25 +7,33 @@ function Confirm-SameArObjContainer{
     )
     process{
         $pass=$True
-        $sortedItems=$Items|Sort-Object {$_.GetAutosarPath().Length}
-        for ($i = 1; $i -lt $sortedItems.Count; $i++) {
-            if(-not $sortedItems[$i].GetAutosarPath().StartsWith($sortedItems[0].GetAutosarPath())){
-                Write-Warning "$sortedItems[$i] at $($sortedItems[$i].GetAutosarPath()) is different with $sortedItems[0] at $($sortedItems[0].GetAutosarPath())"
-                $pass=$False
-            }
-            elseif($Depth -lt 0){
-                # don't check depth
-            }
-            elseif($sortedItems[$i].GetAutosarPath().Substring(0,$sortedItems[0].GetAutosarPath().Length).Split(@("/"),[System.StringSplitOptions]::RemoveEmptyEntries).Count -gt $Depth){
-                Write-Warning "$sortedItems[$i] at $($sortedItems[$i].GetAutosarPath()) is different with $sortedItems[0] at $($sortedItems[0].GetAutosarPath()) with Depth $Depth"
-                $pass=$False
-            }
-            else{
-                Write-Verbose "$sortedItems[$i] at $($sortedItems[$i].GetAutosarPath()) is the same container with $sortedItems[0] at $($sortedItems[0].GetAutosarPath()) with Depth $Depth"
-            }
+        $sortedItems=$Items|Sort-Object {$_.GetAutosarPath().Length}|Foreach-Object {,@($_.GetAutosarPath() -split "/")}
+        $objectMeasures=($sortedItems|ForEach-Object {$_.Count}|Measure-Object -Maximum -Minimum)
+        if($Depth -gt 0 -and $objectMeasures.Maximum-$objectMeasures.Minimum -gt $Depth){
             
+            $pass=$False
         }
+        if($pass){
+            $DepthMeasured=0
+            for($i=0;$i-lt $objectMeasures.Minimum;$i++){
+                # loop
+                if(($sortedItems|ForEach-Object{
+                    $_[$i]
+                }|Select-Object -Unique).Count -ne 1){
+                    
+                    if($DepthMeasured -eq $Depth){
+                        $pass=$False
+                        break;
+                    }
+                    else{
+                        $DepthMeasured++
+                    }
+                    
+                }
+            }
+        }       
         if(-not $pass){
+            Write-Warning "$($items|Foreach-Object{$_.GetAutosarPath()}) container different"
             Write-Error "Same arobj container validation failed for $items."
         }
     }
@@ -33,7 +41,6 @@ function Confirm-SameArObjContainer{
 function Assert-ArObjType{
     param(
         [Parameter(ValueFromPipeline)]
-        [AR430._AR430BaseType]
         $InputObject,
         [Parameter(ParameterSetName="MatchString" , Position=0)]
         [string[]]

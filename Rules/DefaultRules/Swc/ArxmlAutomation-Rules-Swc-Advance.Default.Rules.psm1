@@ -1,4 +1,4 @@
-Import-Module ArxmlAutomation-Swc
+# Import-Module ArxmlAutomation-Swc
 function Set-AssemblySWConnectorShortName{
     param(
         [AR430.AssemblySwConnector]
@@ -11,7 +11,7 @@ function Set-AssemblySWConnectorShortName{
         $P_Port=$AssemblySwConnector.ProviderIref.TargetPPortRef|Find-ArElementFromRef 
         $R_Component=$AssemblySwConnector.RequesterIref.ContextComponentRef|Find-ArElementFromRef 
         $R_Port=$AssemblySwConnector.RequesterIref.TargetRPortRef|Find-ArElementFromRef
-        return "$($P_Component)_$($P_Port)_$($R_Component)_$($R_Port)"
+        $AssemblySwConnector|New-PropertyFactory -PropertyName ShortName|Set-StringToProperty -Value "$($P_Component)_$($P_Port)_$($R_Component)_$($R_Port)"
     }
 }
 function Confirm-AssemblySWConnector{

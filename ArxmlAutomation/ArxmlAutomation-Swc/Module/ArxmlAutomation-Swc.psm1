@@ -21,16 +21,16 @@ function New-AssemblySWConnector {
         # confirm interface types
         $AssemblyConnector=[AR430.AssemblySwConnector]::new()
         $AssemblyConnector|New-PropertyFactory -PropertyName ProviderIref -Process {
-            $_|New-ReferenceProperty -ReferenceItem $ProvideComponent -PropertyName ContextComponentRef
-            $_|New-ReferenceProperty -ReferenceItem $ProvidePort -PropertyName TargetPPortRef
-        }
+            $_|New-ReferenceProperty -ReferenceItem $ProvideComponent -PropertyName ContextComponentRef|Write-FunctionInfos -Content {"$($_.GetType())<$_>"}
+            $_|New-ReferenceProperty -ReferenceItem $ProvidePort -PropertyName TargetPPortRef|Write-FunctionInfos -Content {"$($_.GetType())<$_>"}
+        }|Write-FunctionInfos -Content {"$($_.GetType())<$_>"}
         $AssemblyConnector|New-PropertyFactory -PropertyName RequesterIref -Process {
-            $_|New-ReferenceProperty -ReferenceItem $RequestComponent -PropertyName ContextComponentRef
-            $_|New-ReferenceProperty -ReferenceItem $RequestPort -PropertyName TargetRPortRef
-        }
+            $_|New-ReferenceProperty -ReferenceItem $RequestComponent -PropertyName ContextComponentRef|Write-FunctionInfos -Content {"$($_.GetType())<$_>"}
+            $_|New-ReferenceProperty -ReferenceItem $RequestPort -PropertyName TargetRPortRef|Write-FunctionInfos -Content {"$($_.GetType())<$_>"}
+        }|Write-FunctionInfos -Content {"$($_.GetType())<$_>"}
         Invoke-ConfigCommand -FunctionToInvoke "Set-AssemblySWConnectorShortName" -Arguments @{
             AssemblySwConnector=$AssemblyConnector
-        }
+        }|Write-FunctionInfos -Content {"$($_.GetType())<$_>"}
         return $AssemblyConnector
     }
     

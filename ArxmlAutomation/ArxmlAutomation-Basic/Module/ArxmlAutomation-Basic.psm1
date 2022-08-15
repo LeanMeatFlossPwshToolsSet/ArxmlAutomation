@@ -95,27 +95,6 @@ function Get-PropertyFactory{
         return $findItem
     }
 }
-function Add-ItemToProperty{
-    param(
-        [Parameter(ValueFromPipeline)]
-        [AR430._AR430BaseType]        
-        $Item,
-        [Parameter(ValueFromPipelineByPropertyName)]
-        $PropertyName,
-        [scriptblock]
-        $Process
-    )
-    process{
-        $type=$Item.GetType().GetMember($PropertyName).PropertyType
-        $finalType=$type.GetElementType()
-        $NewItem=New-Object -TypeName $finalType
-        if($Process){
-            $NewItem|Foreach-Object -Process $Process
-        }  
-        $Item.$PropertyName+=$NewItem            
-        return $NewItem
-    }
-}
 function New-PropertyFactory{
     param(
         [Parameter(ValueFromPipeline)]
@@ -136,6 +115,10 @@ function New-PropertyFactory{
 
         }
         $NewItem=New-Object -TypeName $finalType
+        if($NewItem|Get-Member -Name _AutosarParent){
+            $NewItem._AutosarParent=$Item
+        }
+        
         if($Process){
             $NewItem|Foreach-Object -Process $Process
         }  
@@ -148,9 +131,6 @@ function New-PropertyFactory{
         return $NewItem
     }
 }
-function Add-ItemPropertyFactory{
-
-}
 function Set-StringToProperty{
     param(
         [Parameter(ValueFromPipeline)]       
@@ -160,7 +140,7 @@ function Set-StringToProperty{
     )
     process{
         $Item._XmlText=$Value
-    }
+    } 
 }
 function Set-ShortName{
     param(
@@ -188,7 +168,186 @@ function New-ReferrableSubItem{
         }
     }
 }
-function Add-ReferrableSubItemsToCollection{
+function Find-DirectReferrableItem{
+    param(
+        [Parameter(ValueFromPipeline)]
+        $Type
+    )
+    process{
+        $Type.GetProperties()|
+        Where-Object{
+            -not $_.PropertyType.IsArray
+        }|Where-Object{
+            $_.Name -ne "_AutosarParent"
+        }|Where-Object{
+            $_.PropertyType.IsSubclassOf([AR430._AR430BaseType])
+        }|Where-Object{
+            $_.PropertyType.GetProperties()|Where-Object{$_.Name -eq "ShortName"}
+        }
+    }
+}
+function Find-NestedReferrableItem{
+    param(
+        [Parameter(ValueFromPipeline)]
+        $Type,
+        [int]
+        $DepthCurrent=0,
+        [int]
+        $DepthAllow=-1
+    )
+    process{
+        
+        $Type.GetProperties()|Where-Object{
+            $_.PropertyType.IsSubclassOf([AR430._AR430BaseType])
+        }|Where-Object{
+            -not $_.PropertyType.IsArray
+        }|Where-Object{
+            $_.Name -ne "_AutosarParent"
+        }|Where-Object{
+            -not ($_.PropertyType.GetProperties()|Where-Object {$_.Name -eq "ShortName"})
+        }|ForEach-Object{
+            $PropertyArray=@($_)
+            $_.PropertyType|Find-DirectReferrableItem|ForEach-Object{
+                $newAppendArray=$PropertyArray.Clone()
+                $newAppendArray+=$_
+                return ,$newAppendArray
+            }
+            $_.PropertyType|Find-ArrayReferrableItem|ForEach-Object{
+                $newAppendArray=$PropertyArray.Clone()
+                $newAppendArray+=$_
+                return ,$newAppendArray
+            }   
+            if($DepthCurrent+1 -ne $DepthAllow){
+                # this has depth issue
+                $_.PropertyType|Find-NestedReferrableItem -DepthCurrent ($DepthCurrent+1) -DepthAllow $DepthAllow|ForEach-Object{
+                    $newAppendArray=$PropertyArray.Clone()
+                    $newAppendArray+=$_
+                    return ,$newAppendArray
+                }   
+            }
+            
+        }
+    }
+}
+function Find-ArrayReferrableItem{
+    param(
+        [Parameter(ValueFromPipeline)]
+        $Type
+    )
+    process{
+        $Type.GetProperties()|
+        Where-Object{
+            $_.PropertyType.IsArray
+        }|Where-Object{
+            $_.PropertyType.GetElementType().BaseType -eq [AR430._AR430BaseType]
+        }|Where-Object{
+            $_.PropertyType.GetElementType().GetProperties()|Where-Object{$_.Name -eq "ShortName"}
+        }
+    }
+}
+function Find-NextReferrableItemProperty{
+    param(
+        [Parameter(ValueFromPipeline)]
+        $Container
+    )
+    process{
+        $returnValue=@()
+        $returnValue+=,$Container.GetType()|Find-DirectReferrableItem
+        $returnValue+=,$Container.GetType()|Find-ArrayReferrableItem
+        $returnValue+=,$Container.GetType()|Find-NestedReferrableItem -DepthAllow 5
+        return $returnValue
+    }
+}
+function Update-ReferrableItemToCollection{
+    param(      
+        $Container,
+        [Parameter(ValueFromPipeline)]
+        $Item
+    )
+    process{
+        $Container|Find-NextReferrableItemProperty|Where-Object{
+            if(($_[-1].PropertyType.IsArray)){
+                $_[-1].PropertyType.GetElementType() -eq $Item.GetType()
+            }
+            else{
+                $_[-1].PropertyType -eq $Item.GetType()
+            }            
+        }|Select-Object -First 1|ForEach-Object{
+            # processing with the property array
+            $currentContainer=$Container
+            foreach($propertyItem in $_){
+                if($propertyItem.PropertyType.IsArray){
+                    if($propertyItem -eq $_[-1]){
+                        $getResult=$propertyItem.GetValue($currentContainer)
+                        if(-not $getResult){
+                            $getResult=[System.Array]::CreateInstance($propertyItem.PropertyType.GetElementType(),0)
+                        }
+                        $findItem=$getResult|Where-Object{$_.ShortName -eq $Item.ShortName}|Select-Object -First 1
+                        if($findItem){
+                            "Replace $findItem with $Item at $($currentContainer._AutosarParent.GetAutosarPath())"|Write-FunctionInfos
+                            $getResult-=$findItem
+                        }
+                        else{
+                            $path=$currentContainer._AutosarParent.GetAutosarPath()
+                            "Add $Item at $path"|Write-FunctionInfos
+                        }
+                        $Item._AutosarParent=$currentContainer
+                        $getResult+=,$Item
+                        $resultcontainer=$getResult -as "$($propertyItem.PropertyType.FullName)"
+                        $propertyItem.SetValue($currentContainer,$resultcontainer)
+                    }else{
+                        # not the final one, try to create a container
+                        # last index, has to process
+                        $getResult=$propertyItem.GetValue($currentContainer)
+                        if(-not $getResult){
+                            $getResult=[System.Array]::CreateInstance($propertyItem.PropertyType.GetElementType(),0)
+                        }
+                        if($getResult.Count -gt 0){
+                            $currentContainer=$getResult[0]
+                        }
+                        else{
+                            $newItem=New-Object -TypeName $propertyItem.PropertyType.GetElementType()
+                            $getResult+=$newItem
+                            $newItem._AutosarParent=$currentContainer
+                            $propertyItem.SetValue($currentContainer,($getResult -as "$($propertyItem.PropertyType.FullName)"))
+                            $currentContainer=$newItem
+                        }
+                    }
+                }
+                else{
+                    if($propertyItem -eq $_[-1]){
+                        # last index, has to process
+                        $getResult=$propertyItem.GetValue($currentContainer)
+                        if($getResult){
+                            "Replace $getResult with $Item at $($currentContainer.GetAutosarPath())"|Write-FunctionInfos
+                        }
+                        else{
+                            "Set $Item at $($currentContainer.GetAutosarPath())"|Write-FunctionInfos
+                        }
+                        $Item._AutosarParent=$currentContainer
+                        $propertyItem.SetValue($currentContainer,$Item)
+                    }
+                    else{
+                        # none last, process to the last
+                        # last index, has to process
+                        $getResult=$propertyItem.GetValue($currentContainer)
+                        if($getResult){
+                            $currentContainer=$getResult
+                        }
+                        else{
+                            "$($propertyItem.Name) at $currentContainer($($currentContainer.GetAutosarPath())) empty, create new"
+                            $getResult=New-Object -TypeName $propertyItem.PropertyType
+                            $getResult._AutosarParent=$currentContainer
+                            $propertyItem.SetValue($currentContainer,$getResult)
+                            $currentContainer=$getResult
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+function New-ReferrableSubItemsToCollection{
     param(
         [Parameter(ValueFromPipeline)]
         [AR430._AR430BaseType]        
@@ -317,7 +476,9 @@ function Get-ArElementRef{
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline)]
-        [AR430._AR430BaseType]
+        [ValidateScript({
+            $_|Assert-ArObjType ([AR430._AR430BaseType],[AR430.Ref]) 
+        })]
         $ArObjWithRef
     )
     process{
@@ -327,7 +488,7 @@ function Get-ArElementRef{
         }
         else{
             $ArObjWithRef.GetType().GetProperties()|Where-Object{
-                $_.PropertyType.BaseType -eq [AR430.Ref]
+                $_.PropertyType.IsSubclassOf([AR430.Ref])
             }|ForEach-Object{
                 $_.GetValue($ArObjWithRef)                
             }
@@ -338,8 +499,10 @@ function Get-ArElementRef{
 function Find-ArElementFromRef{
     [CmdletBinding()]
     param(
+        [ValidateScript({
+            $_|Assert-ArObjType ([AR430._AR430BaseType],[AR430.Ref]) 
+        })]
         [Parameter(ValueFromPipeline)]
-        [AR430._AR430BaseType]
         $ArObjWithRef
     )
     process{

@@ -5,8 +5,10 @@ $Global:ErrorActionPreference="Break"
 Import-Module ArxmlAutomation-Swc -Force
 Import-Module ArxmlAutomation-Swc-Advance -Force
 Get-AUTOSARCollection -FilePaths (Get-ChildItem "../ExampleResouces/SWComponentAndComposition" -Filter "*.arxml" -Recurse)|Use-AutoSarCollection
-$compositionDest=Find-AllItemsByType -Type ([AR430.CompositionSwComponentType])|Where-Object {
+$global:compositionDest=Find-AllItemsByType -Type ([AR430.CompositionSwComponentType])|Where-Object {
     $_.GetAutosarPath().Equals("/ComponentTypes/Implementation")
 }
+$compositionDest|Show-ConnectionsInfo
 Get-UnConnectedRPort  -Composition $compositionDest|Connect-PortAutomation
+$compositionDest|Show-ConnectionsInfo
 
