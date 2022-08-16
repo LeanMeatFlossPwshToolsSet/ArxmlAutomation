@@ -62,20 +62,23 @@ function Publish-ModuleWizard{
     process{
         # Read Dependency
         $moduleConfiguration=Import-PowerShellDataFile  "$($FilePath.FullName)/$($FilePath.Name).psd1"
-        Write-Host "Nested modules $($moduleConfiguration.NestedModules)"
-        $moduleConfiguration.NestedModules|ForEach-Object{
-            $nestModule=$_
-            if(($script:PublishedModule.Count -eq 0) -or (-not ($script:PublishedModule|Where-Object{$_.Name -eq $nestModule }))){
-                # publish dependency
-                if($DependencyDepth -ne $MaxDependency){
-                    Write-Host "Publish Dependency Module $nestModule"
-                    Publish-ModuleWizard -FilePath (Get-Item "$($env:GITHUB_WORKSPACE)/ArxmlAutomation/$nestModule") -NugetKey $NugetKey -DependencyDepth ($DependencyDepth+1) -MaxDependency $MaxDependency
-                }
-                else{
-                    Write-Error "Dependency Over Flow on Publish $nestModule"
+        if($moduleConfiguration.NestedModules){
+            Write-Host "Nested modules $($moduleConfiguration.NestedModules)"
+            $moduleConfiguration.NestedModules|ForEach-Object{
+                $nestModule=$_
+                if(($script:PublishedModule.Count -eq 0) -or (-not ($script:PublishedModule|Where-Object{$_.Name -eq $nestModule }))){
+                    # publish dependency
+                    if($DependencyDepth -ne $MaxDependency){
+                        Write-Host "Publish Dependency Module $nestModule"
+                        Publish-ModuleWizard -FilePath (Get-Item "$($env:GITHUB_WORKSPACE)/ArxmlAutomation/$nestModule") -NugetKey $NugetKey -DependencyDepth ($DependencyDepth+1) -MaxDependency $MaxDependency
+                    }
+                    else{
+                        Write-Error "Dependency Over Flow on Publish $nestModule"
+                    }
                 }
             }
         }
+        
         # publish current module
         if($script:PublishedModule|Where-Object{$_.Name -eq $FilePath.Name }){
             Write-Host "$($FilePath.Name) has been published, skip"
