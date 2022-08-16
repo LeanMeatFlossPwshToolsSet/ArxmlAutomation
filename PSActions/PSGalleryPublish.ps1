@@ -61,7 +61,7 @@ function Publish-ModuleWizard{
         Write-Host "Nested modules $($moduleConfiguration.NestedModules)"
         $moduleConfiguration.NestedModules|ForEach-Object{
             $nestModule=$_
-            if(-not $script:PublishedModule|Where-Object{$_.Name -eq $nestModule }){
+            if($script:PublishedModule.Count -eq 0 -and -not $script:PublishedModule|Where-Object{$_.Name -eq $nestModule }){
                 # publish dependency
                 if($DependencyDepth -ne $MaxDependency){
                     Write-Host "Publish Dependency Module $nestModule"
