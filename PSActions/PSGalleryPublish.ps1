@@ -5,6 +5,10 @@ param(
     $GitHubKey
 )
 $PSVersionTable
+if(-not $env:GITHUB_WORKSPACE){
+    Write-Host "not github environment, switch to local workspace"
+    $env:GITHUB_WORKSPACE=Resolve-Path("$PSScriptRoot/..")
+}
 $env:PSModulePath+=[IO.Path]::PathSeparator+"$($env:GITHUB_WORKSPACE)/ArxmlAutomation"
 
 git config user.name "CD Process"
@@ -61,7 +65,7 @@ function Publish-ModuleWizard{
         Write-Host "Nested modules $($moduleConfiguration.NestedModules)"
         $moduleConfiguration.NestedModules|ForEach-Object{
             $nestModule=$_
-            if($script:PublishedModule.Count -eq 0 -or -not $script:PublishedModule|Where-Object{$_.Name -eq $nestModule }){
+            if(($script:PublishedModule.Count -eq 0) -or (-not ($script:PublishedModule|Where-Object{$_.Name -eq $nestModule }))){
                 # publish dependency
                 if($DependencyDepth -ne $MaxDependency){
                     Write-Host "Publish Dependency Module $nestModule"
