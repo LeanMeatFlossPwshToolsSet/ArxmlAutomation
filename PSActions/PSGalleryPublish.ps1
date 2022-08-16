@@ -114,6 +114,7 @@ function Publish-ModuleWizard{
             Publish-Module -Path "$($FilePath.FullName)" -NuGetApiKey $NugetKey -WhatIf -Verbose
         
         }
+        $script:PublishedModule+=,$FilePath
     }
 }
 Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
