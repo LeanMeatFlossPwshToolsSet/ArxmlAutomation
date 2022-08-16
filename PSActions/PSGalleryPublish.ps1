@@ -35,59 +35,95 @@ $taggedVersionArray[-1]=([int]$taggedVersionArray[-1]+1).ToString()
 
 
 
-$submitVersion=$taggedVersionArray -join "."
-$GitNewTaggedVersion="v$($submitVersion)"
+$script:submitVersion=$taggedVersionArray -join "."
+$script:GitNewTaggedVersion="v$($script:submitVersion)"
 
 # increasing the version
 $rev=$env:GITHUB_SHA
 Write-Host "
 Current Commit $rev
-New Version need to be tagged $GitNewTaggedVersion
+New Version need to be tagged $script:GitNewTaggedVersion
 "
-Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
-    
-    $moduleOnCloud=Find-Module -Name $_.Name -ErrorAction Continue
-    # $moduleOnCloud|Write-Host
-    if($moduleOnCloud){
-        $cloudVersion=$moduleOnCloud.Version.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
-        for ($i = 0; $i -lt $cloudVersion.Count; $i++) {
-            <# Action that will repeat until the condition is met #>
-            if($taggedVersionArray[$i] -le $cloudVersion[$i]){
-                $taggedVersionArray[$i]=$cloudVersion[$i]
-                if($i -eq 2){
-                    $taggedVersionArray[$i]=(([int]$cloudVersion[$i])+1).ToString()
+$script:PublishedModule=@()
+function Publish-ModuleWizard{
+    param(
+        [System.IO.DirectoryInfo]
+        $FilePath,
+        $NugetKey,
+        [int]
+        $DependencyDepth=0,
+        [int]
+        $MaxDependency=-1
+    )
+    process{
+        # Read Dependency
+        $moduleConfiguration=Import-PowerShellDataFile  $FilePath.FullName
+        $moduleConfiguration.NestedModules|ForEach-Object{
+            $nestModule=$_
+            if(-not $script:PublishedModule|Where-Object{$_.Name -eq $nestModule }){
+                # publish dependency
+                if($DependencyDepth -ne $MaxDependency){
+                    Write-Host "Publish Dependency Module $nestModule"
+                    Publish-ModuleWizard -FilePath (Get-Item "$($env:GITHUB_WORKSPACE)/ArxmlAutomation/$nestModule") -NugetKey $NugetKey -DependencyDepth ($DependencyDepth+1) -MaxDependency $MaxDependency
+                }
+                else{
+                    Write-Error "Dependency Over Flow on Publish $nestModule"
                 }
             }
-            $newSubmitVersion=$taggedVersionArray -join "."
-            if(-not $newSubmitVersion.Equals($submitVersion)){
-                $submitVersion=$taggedVersionArray -join "."
-                $GitNewTaggedVersion="v$($submitVersion)"
-                Write-Host "
-                Version update
-                New Version need to be tagged $GitNewTaggedVersion
-                "
+        }
+        # publish current module
+        if($script:PublishedModule|Where-Object{$_.Name -eq $FilePath.Name }){
+            Write-Host "$($FilePath.Name) has been published, skip"
+            return
+        }       
+
+
+        $moduleOnCloud=Find-Module -Name $FilePath.Name -ErrorAction Continue
+        # $moduleOnCloud|Write-Host
+        if($moduleOnCloud){
+            $cloudVersion=$moduleOnCloud.Version.Split([string[]]@(".","v"),[System.StringSplitOptions]::RemoveEmptyEntries)
+            for ($i = 0; $i -lt $cloudVersion.Count; $i++) {
+                <# Action that will repeat until the condition is met #>
+                if($taggedVersionArray[$i] -le $cloudVersion[$i]){
+                    $taggedVersionArray[$i]=$cloudVersion[$i]
+                    if($i -eq 2){
+                        $taggedVersionArray[$i]=(([int]$cloudVersion[$i])+1).ToString()
+                    }
+                }
+                $newSubmitVersion=$taggedVersionArray -join "."
+                if(-not $newSubmitVersion.Equals($script:submitVersion)){
+                    $script:submitVersion=$taggedVersionArray -join "."
+                    $script:GitNewTaggedVersion="v$($script:submitVersion)"
+                    Write-Host "
+                    Version update
+                    New Version need to be tagged $script:GitNewTaggedVersion
+                    "
+                }
+                
             }
+        }
+        Update-ModuleManifest -Path (Join-Path $FilePath.FullName "$($FilePath.Name).psd1") -ModuleVersion $script:submitVersion
+        Test-ModuleManifest -Path (Join-Path $FilePath.FullName "$($FilePath.Name).psd1")
+        if($env:GITHUB_REF_NAME -eq "main"){
+            # main branch methods
+            Publish-Module -Path "$($FilePath.FullName)" -NuGetApiKey $NugetKey -Verbose -Force
             
         }
-    }
-    Update-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1") -ModuleVersion $submitVersion
-    Test-ModuleManifest -Path (Join-Path $_.FullName "$($_.Name).psd1")
-    if($env:GITHUB_REF_NAME -eq "main"){
-        # main branch methods
-        Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -Verbose -Force
+        else {
+            # sub branch methods
+            Publish-Module -Path "$($FilePath.FullName)" -NuGetApiKey $NugetKey -WhatIf -Verbose
         
+        }
     }
-    else {
-        # sub branch methods
-        Publish-Module -Path "$($_.FullName)" -NuGetApiKey $NugetKey -WhatIf -Verbose
-       
-    }
+}
+Get-ChildItem -Path "$($env:GITHUB_WORKSPACE)/ArxmlAutomation" -Directory |ForEach-Object{
+    Publish-ModuleWizard -FilePath $_ -NugetKey $NugetKey
 }
 if($env:GITHUB_REF_NAME -eq "main"){
     # main branch methods
     "Push tag to Repo"|Write-Host
-    git tag -a $GitNewTaggedVersion $rev -m "Continous Delivery Version Submitted"
-    git push origin "$GitNewTaggedVersion"
+    git tag -a $script:GitNewTaggedVersion $rev -m "Continous Delivery Version Submitted"
+    git push origin "$script:GitNewTaggedVersion"
     
 }
 else{
