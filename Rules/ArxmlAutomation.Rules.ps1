@@ -13,6 +13,6 @@ Get-ChildItem "$PSScriptRoot/DefaultRules" -Recurse -Filter *.Rules.ps1|ForEach-
 $Global:ArxmlAutomationConfig|
     Format-Table `
     @{Label="Config Attribute";Expression={$_.Key}},
-    @{Label="Target Function";Expression={(Get-Command $_.Value).Name}},
-    @{Label="Source";Expression={(Get-Command $_.Value).Source}}
+    @{Label="Target Function";Expression={($_.Value).Name}},
+    @{Label="Source";Expression={($_.Value).Source}}
 |Out-String|Write-FunctionInfos -Heading "Current Global Callout Configuration:" -ForegroundColor Green
