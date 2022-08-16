@@ -58,6 +58,7 @@ function Publish-ModuleWizard{
     process{
         # Read Dependency
         $moduleConfiguration=Import-PowerShellDataFile  "$($FilePath.FullName)/$($FilePath.Name).psd1"
+        Write-Host "Nested modules $($moduleConfiguration.NestedModules)"
         $moduleConfiguration.NestedModules|ForEach-Object{
             $nestModule=$_
             if(-not $script:PublishedModule|Where-Object{$_.Name -eq $nestModule }){
